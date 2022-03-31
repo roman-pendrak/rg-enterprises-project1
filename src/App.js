@@ -121,10 +121,10 @@ export default function App() {
   return (
     <div>
       <Grid container direction='row'>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           {/* empty space */}
         </Grid>
-        <Grid className={classes.root} item xs={4}>
+        <Grid className={classes.root} item xs={6}>
           {/* button to send GET req for new numbers */}
           <Button onClick={() => {handleClick()}} className={classes.button} color='primary'>GENERATE NEW</Button>    
           {/* table to show numbers recieved from GET req */}
@@ -174,7 +174,7 @@ export default function App() {
             </Table>
           </TableContainer>
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={3}>
           {/* empty space */}
         </Grid>
       </Grid>
