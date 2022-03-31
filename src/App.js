@@ -1,4 +1,3 @@
-import './App.css';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
@@ -8,18 +7,19 @@ import TableBody from '@material-ui/core/TableBody';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
 
 export default function App() {
   const classes = useStyles();
-  const [num1, setNum1] = useState(0);
-  const [num2, setNum2] = useState(0);
-  const [resultPlus, setResultPlus] = useState(0);
-  const [resultMinus, setResultMinus] = useState(0);
-  const [resultTimes, setResultTimes] = useState(0);
-  const [resultDividedBy, setResultDividedBy] = useState(0);
+  const [num1, setNum1] = useState("N/A");
+  const [num2, setNum2] = useState("N/A");
+  const [resultPlus, setResultPlus] = useState("N/A");
+  const [resultMinus, setResultMinus] = useState("N/A");
+  const [resultTimes, setResultTimes] = useState("N/A");
+  const [resultDividedBy, setResultDividedBy] = useState("N/A");
 
   const stringToNumberTable = {
     "one" : 1,
@@ -52,6 +52,13 @@ export default function App() {
   }
 
   function handleClick() {
+    setNum1("loading");
+    setNum2("loading");
+    setResultPlus("loading");
+    setResultMinus("loading");
+    setResultTimes("loading");
+    setResultDividedBy("loading");
+    const operations = ["plus", "minus", "times", "divided by"];
     fetch('https://100insure.com/mi/api1.php')
     .then(data => {
       return data.json();
@@ -60,33 +67,42 @@ export default function App() {
       console.log(data);
       setNum1(convertToNumber(data.key1));
       setNum2(convertToNumber(data.key2));
-      
-//start
+      //start post
+      for (let i = 0; i < operations.length; i++) {
+        fetch('https://100insure.com/mi/api2.php', {
+            body: '{"num1": ' + convertToNumber(data.key1) + ', "num2": ' + convertToNumber(data.key2) + ', "operation": "' + operations[i] + '"}',
+            method: 'POST',
+        })
+        .then(response => response.text())
+        .then(data => {
+          console.log(data);  
+          switch(operations[i]){
+            case 'plus':
+              setResultPlus(data);
+              break;
 
-var headers = new Headers();
-headers.append('Content-Type', 'application/json');
+            case 'minus':
+              setResultMinus(data);
+              break;
 
-fetch('https://100insure.com/mi/api2.php', {
-    data: {"num1": num1, "num2": num2, "operation": "plus"},
-    method: 'POST',
-    headers: headers,
-})
-.then(response => response.text())
-.then(data => {
-console.log(data);  
-})
-.catch(function(error) {
-  console.log(error)
-});
+            case 'times':
+              setResultTimes(data);
+              break;
 
+            case 'divided by':
+              setResultDividedBy(data);
+              break;
 
-
-//end
-
-      // post to add num
-      // post to subtract
-      // post to multiply 
-      // post to divide
+            default: 
+              console.log("Invalid Operation.")
+              break;
+          }
+        })
+        .catch(function(error) {
+          console.log(error)
+        });
+      }
+      //end post
     })
     .catch(function(error) {
       console.log(error)
@@ -110,7 +126,7 @@ console.log(data);
         </Grid>
         <Grid className={classes.root} item xs={4}>
           {/* button to send GET req for new numbers */}
-          <Button onClick={handleClick} className={classes.button} color='primary'>GENERATE NEW</Button>    
+          <Button onClick={() => {handleClick()}} className={classes.button} color='primary'>GENERATE NEW</Button>    
           {/* table to show numbers recieved from GET req */}
           <TableContainer className={classes.table} component={Paper}>
             <Table>
@@ -122,8 +138,8 @@ console.log(data);
               </TableHead>
               <TableBody>
                 <TableRow>
-                  <TableCell width="50%" align='center'>{num1}</TableCell>
-                  <TableCell width="50%" align='center'>{num2}</TableCell>
+                  <TableCell width="50%" align='center'>{num1 === "loading" ? <CircularProgress size="0.90rem"/> : num1}</TableCell>
+                  <TableCell width="50%" align='center'>{num2 === "loading" ? <CircularProgress size="0.90rem"/> : num2}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -140,19 +156,19 @@ console.log(data);
               <TableBody>
                 <TableRow>
                   <TableCell width="50%" align='center'>Plus (+)</TableCell>
-                  <TableCell width="50%" align='center'>{resultPlus}</TableCell>
+                  <TableCell width="50%" align='center'>{resultPlus === "loading" ? <CircularProgress size="0.90rem"/> : resultPlus}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell width="50%" align='center'>Minus (-)</TableCell>
-                  <TableCell width="50%" align='center'>{resultMinus}</TableCell>
+                  <TableCell width="50%" align='center'>{resultMinus === "loading" ? <CircularProgress size="0.90rem"/> : resultMinus}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell width="50%" align='center'>Times (x)</TableCell>
-                  <TableCell width="50%" align='center'>{resultTimes}</TableCell>
+                  <TableCell width="50%" align='center'>{resultTimes === "loading" ? <CircularProgress size="0.90rem"/> : resultTimes}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell width="50%" align='center'>Divided By (/)</TableCell>
-                  <TableCell width="50%" align='center'>{resultDividedBy}</TableCell>
+                  <TableCell width="50%" align='center'>{resultDividedBy === "loading" ? <CircularProgress size="0.90rem"/> : resultDividedBy}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -186,5 +202,5 @@ const useStyles = makeStyles(() => ({
   table: {
     marginTop: "20px",
     border: "1px solid gray"
-  }
+  },
 }));
